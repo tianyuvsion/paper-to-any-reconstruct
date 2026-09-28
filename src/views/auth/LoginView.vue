@@ -1,117 +1,143 @@
 <template>
   <div class="login-page">
-    <JournalCanvas />
+    <!-- 顶栏品牌 Wordmark -->
+    <header class="site-header auth-site-header">
+      <router-link to="/" class="brand-link" aria-label="Paper to Any 首页">
+        <span class="wordmark">Paper <span>to</span> Any</span>
+        <span class="wordmark-star">✦</span>
+      </router-link>
+    </header>
 
-    <div class="login-container">
-      <!-- 左侧：学术期刊背景与愿景展区 -->
-      <section class="journal-hero">
-        <div class="brand-badge">
-          <span class="brand-symbol">R²</span>
-          <div class="brand-text">
-            <strong>Paper to Any</strong>
-            <small>Research Site · Private Beta</small>
-          </div>
-        </div>
+    <!-- 登录主舞台 -->
+    <main class="login-container">
+      <!-- 左侧：纯净青柠底色 · 3张卡片规律平滑位移的互动卡片 -->
+      <div class="possibility-col">
+        <WelcomePossibilityCard />
+      </div>
 
-        <p class="eyebrow">ACADEMIC RIGOR &amp; REPRODUCIBILITY</p>
-        <h1 class="hero-title">
-          上传一篇论文，<br />
-          先得到可核对的阅读入口。
-        </h1>
-        <p class="hero-description">
-          系统严格保存原件哈希、正文页码和生成状态。第一版只展示从原文中真实提取的内容，AI 判断和评分不会偷偷补齐。
-        </p>
-
-        <div class="security-guarantee">
-          <div class="guarantee-item">
-            <span class="dot"></span>
-            <span>原文核验证据链</span>
-          </div>
-          <div class="guarantee-item">
-            <span class="dot"></span>
-            <span>受邀共享研究库</span>
-          </div>
-          <div class="guarantee-item">
-            <span class="dot"></span>
-            <span>无痕沙箱提取</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 右侧：Carved UI 浮雕登录卡片 -->
-      <section class="auth-card carved-card">
-        <header class="card-header">
-          <span class="badge-beta">INVITE-ONLY BETA</span>
-          <h2 class="card-title">进入内测研究库</h2>
-          <p class="card-subtitle">这是受邀成员共用的测试空间。请验证您的内测身份。</p>
+      <!-- 右侧：登录表单面板 -->
+      <section class="auth-panel" aria-labelledby="login-title">
+        <header class="auth-heading">
+          <h1 id="login-title">欢迎回来</h1>
+          <p>继续你的阅读与发现。</p>
         </header>
 
-        <!-- 模式切换凹槽 Tab -->
-        <div class="carved-well tab-track" role="tablist">
+        <!-- 登录模式切换 Tab (邮箱密码 / 邮箱验证码 / 内测口令) -->
+        <nav class="auth-tabs" role="tablist" aria-label="邮箱登录方式">
           <button
             type="button"
-            class="tab-pill"
-            :class="{ active: activeTab === 'invite' }"
-            role="tab"
-            :aria-selected="activeTab === 'invite'"
-            @click="activeTab = 'invite'"
-          >
-            内测邀请码
-          </button>
-          <button
-            type="button"
-            class="tab-pill"
+            class="tab-btn"
             :class="{ active: activeTab === 'password' }"
             role="tab"
             :aria-selected="activeTab === 'password'"
             @click="activeTab = 'password'"
           >
-            账户密码
+            邮箱密码
           </button>
-        </div>
+          <button
+            type="button"
+            class="tab-btn tab-btn--disabled"
+            role="tab"
+            disabled
+            title="邮箱验证码发送服务尚未配置"
+          >
+            邮箱验证码
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            :class="{ active: activeTab === 'invite' }"
+            role="tab"
+            :aria-selected="activeTab === 'invite'"
+            @click="activeTab = 'invite'"
+          >
+            内测口令
+          </button>
+        </nav>
 
-        <!-- 状态反馈通知条 -->
+        <!-- 错误提示通知条 -->
         <Transition name="fade-slide">
           <div v-if="authStore.errorMessage" class="error-notice" role="alert">
             <span class="error-icon">!</span>
-            <span class="error-text">{{ authStore.errorMessage }}</span>
+            <span>{{ authStore.errorMessage }}</span>
           </div>
         </Transition>
 
         <!-- 表单切换区域 -->
         <Transition name="fade-mode" mode="out-in">
-          <InviteLoginTab
-            v-if="activeTab === 'invite'"
-            :loading="authStore.isSubmitting"
-            @submit="handleInviteSubmit"
-          />
           <PasswordLoginTab
-            v-else
+            v-if="activeTab === 'password'"
             :loading="authStore.isSubmitting"
             @submit="handlePasswordSubmit"
           />
+          <InviteLoginTab
+            v-else
+            :loading="authStore.isSubmitting"
+            @submit="handleInviteSubmit"
+          />
         </Transition>
 
-        <!-- 开发模式快捷直通 -->
-        <div v-if="authStore.isDevModeOpen || !authStore.authRequired" class="dev-bypass-wrap">
-          <div class="divider">
-            <span>开发便利通道</span>
-          </div>
-          <button
-            type="button"
-            class="dev-bypass-button carved-pressable"
-            @click="handleDevBypass"
-          >
-            <span class="dev-tag">LOCAL</span>
-            <span>免密直达工作台</span>
+        <!-- 其他登录方式分割线 -->
+        <div class="auth-divider">其他登录方式</div>
+
+        <!-- 社交登录按钮组 -->
+        <div class="social-buttons" aria-label="第三方服务登录">
+          <button type="button" class="provider-btn" disabled title="微信登录服务尚未配置">
+            <span class="wechat-mark">●</span>
+            <span>微信</span>
+          </button>
+          <button type="button" class="provider-btn" disabled title="短信验证码服务尚未配置">
+            <span class="sms-mark">▯</span>
+            <span>短信登录</span>
+          </button>
+          <button type="button" class="provider-btn" disabled title="Google 登录尚未配置">
+            <span class="google-mark">G</span>
+            <span>Google</span>
           </button>
         </div>
 
-        <footer class="card-footer">
-          <small>这一阶段是受邀内测，论文模型调用将按实际配置进行安全核验与审计。</small>
-        </footer>
+        <!-- 注册引导条 -->
+        <div class="auth-create-account">
+          <div>
+            <strong>还没有账号？</strong>
+            <p>用受邀邮箱创建你的研究空间。</p>
+          </div>
+          <button
+            type="button"
+            class="create-button"
+            disabled
+            title="本轮内测暂不开放自助注册，请使用团队分配的内测口令"
+          >
+            创建账号
+          </button>
+        </div>
+
+        <!-- 本地开发直通入口 -->
+        <button
+          v-if="authStore.isDevModeOpen || !authStore.authRequired"
+          type="button"
+          class="dev-bypass-link"
+          @click="handleDevBypass"
+        >
+          本地开发：免密直达工作台 →
+        </button>
+
+        <!-- 返回首页 -->
+        <div class="auth-back">
+          <router-link to="/" class="back-home-link">返回首页</router-link>
+        </div>
       </section>
-    </div>
+    </main>
+
+    <!-- 页脚规范 -->
+    <footer class="site-footer">
+      <span>Paper to Any V3.0.0·内测版 · 天与视界</span>
+      <nav aria-label="页脚导航">
+        <a href="#help" @click.prevent>帮助</a>
+        <a href="#privacy" @click.prevent>隐私</a>
+        <a href="#terms" @click.prevent>使用说明</a>
+      </nav>
+    </footer>
   </div>
 </template>
 
@@ -119,7 +145,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import JournalCanvas from '@/components/layout/JournalCanvas.vue'
+import WelcomePossibilityCard from './components/WelcomePossibilityCard.vue'
 import InviteLoginTab from './components/InviteLoginTab.vue'
 import PasswordLoginTab from './components/PasswordLoginTab.vue'
 import type { InviteLoginPayload, PasswordLoginPayload } from '@/types/auth'
@@ -128,7 +154,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const activeTab = ref<'invite' | 'password'>('invite')
+const activeTab = ref<'invite' | 'password'>('password')
 
 async function navigateAfterLogin() {
   const redirect = (route.query.redirect as string) || '/workspace'
@@ -161,173 +187,114 @@ async function handleDevBypass() {
 
 <style scoped>
 .login-page {
-  position: relative;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  background: var(--c-ground);
-  overflow: hidden;
-}
-
-.login-container {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1140px;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: clamp(40px, 6vw, 96px);
-  align-items: center;
+  grid-template-rows: 88px 1fr 55px;
+  background-color: #ffffff;
+  color: #29253a;
 }
 
-/* 左侧期刊英雄区 */
-.journal-hero {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.brand-badge {
+/* 顶栏品牌 Wordmark */
+.site-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  padding: 0 40px;
+  border-bottom: 1px solid #ebe8ef;
 }
 
-.brand-symbol {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  background: var(--c-purple-primary);
-  color: #fff;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-serif);
-  font-size: 22px;
-  box-shadow: 0 4px 14px rgba(53, 32, 109, 0.2);
+.brand-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.brand-text strong {
-  display: block;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--c-ink);
+.wordmark {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  color: #29253a;
 }
 
-.brand-text small {
-  display: block;
-  font-size: 11px;
-  color: var(--c-muted);
-  font-family: var(--font-mono);
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--c-teal);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.hero-title {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(38px, 4.4vw, 56px);
-  line-height: 1.18;
-  letter-spacing: -0.035em;
-  color: var(--c-ink);
-}
-
-.hero-description {
-  margin: 0;
-  max-width: 540px;
-  color: var(--c-copy);
-  font-size: 16px;
-  line-height: 1.85;
-}
-
-.security-guarantee {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 14px;
-}
-
-.guarantee-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--c-copy);
-}
-
-.guarantee-item .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c-teal);
-}
-
-/* 右侧 Carved 卡片 */
-.auth-card {
-  padding: 44px 40px;
-}
-
-.card-header {
-  margin-bottom: 24px;
-}
-
-.badge-beta {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--c-lavender);
-  color: var(--c-purple-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  margin-bottom: 12px;
-}
-
-.card-title {
-  margin: 0 0 8px;
-  font-family: var(--font-serif);
-  font-size: 30px;
-  color: var(--c-ink);
-}
-
-.card-subtitle {
-  margin: 0;
-  color: var(--c-copy);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* 凹凸 Tab 切换 */
-.tab-track {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 4px;
-  margin-bottom: 24px;
-}
-
-.tab-pill {
-  padding: 10px 16px;
-  border: 0;
-  background: transparent;
-  color: var(--c-copy);
-  font-size: 14px;
+.wordmark span {
+  color: #7e67ae;
   font-weight: 600;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tab-pill.active {
-  background: var(--c-paper);
-  color: var(--c-purple-primary);
-  box-shadow: var(--carved-raised-sm);
+.wordmark-star {
+  color: #f39b7f;
+  font-size: 19px;
+  margin-left: 2px;
+}
+
+/* 主舞台布局 */
+.login-container {
+  width: min(1040px, calc(100% - 48px));
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  gap: 72px;
+  align-items: center;
+  padding: 42px 0;
+}
+
+.possibility-col {
+  width: 100%;
+}
+
+/* 右侧登录面板 */
+.auth-panel {
+  width: 100%;
+}
+
+.auth-heading h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: -1.5px;
+  font-weight: 800;
+  color: #29253a;
+}
+
+.auth-heading p {
+  margin: 0 0 28px;
+  color: #686274;
+  font-size: 14px;
+}
+
+/* 模式 Tab 切换 */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  background: #f0eef3;
+}
+
+.tab-btn {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #716a80;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #654c92;
+  border-color: #ded8e8;
+  box-shadow: 0 1px 3px rgba(43, 31, 70, 0.1);
+}
+
+.tab-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* 错误提示 */
@@ -335,13 +302,13 @@ async function handleDevBypass() {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  background: var(--c-danger-soft);
-  border: 1px solid rgba(169, 36, 45, 0.15);
-  color: var(--c-danger);
-  font-size: 13px;
   margin-bottom: 20px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: #fff0ef;
+  border: 1px solid rgba(168, 61, 70, 0.2);
+  color: #a83d46;
+  font-size: 13px;
 }
 
 .error-icon {
@@ -350,133 +317,206 @@ async function handleDevBypass() {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--c-danger);
+  background: #a83d46;
   color: #fff;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   flex-shrink: 0;
 }
 
-/* 开发直通区 */
-.dev-bypass-wrap {
-  margin-top: 24px;
-}
-
-.divider {
-  position: relative;
+/* 分割线 */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 18px;
+  color: #625b6e;
+  font-size: 12px;
   text-align: center;
-  margin-bottom: 16px;
 }
 
-.divider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
   height: 1px;
-  background: var(--c-line);
+  background: #e7e3eb;
 }
 
-.divider span {
-  position: relative;
-  padding: 0 12px;
-  background: var(--c-paper);
-  color: var(--c-muted);
-  font-size: 11px;
+/* 社交登录按钮组 */
+.social-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
-.dev-bypass-button {
-  width: 100%;
+.provider-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 11px 16px;
-  background: var(--c-lavender-soft);
-  border: 1px dashed var(--c-purple-secondary);
-  border-radius: var(--radius-md);
-  color: var(--c-purple-primary);
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid #e4dfeb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #aaa2bf;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: not-allowed;
+  box-shadow: 0 1px 2px #eeeaf2;
+}
+
+.wechat-mark {
+  color: #72c9a0;
+  font-size: 16px;
+}
+
+.sms-mark {
+  font-size: 14px;
+}
+
+.google-mark {
+  color: #e9876e;
+  font-weight: 800;
+}
+
+/* 注册引导条 */
+.auth-create-account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid #e7e3eb;
+}
+
+.auth-create-account strong {
+  font-size: 14px;
+  color: #29253a;
+}
+
+.auth-create-account p {
+  margin: 5px 0 0;
+  color: #777083;
+  font-size: 12px;
+}
+
+.create-button {
+  min-width: 86px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #ded8e8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #6a5792;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+/* 辅助通道链接 */
+.dev-bypass-link {
+  display: block;
+  margin: 20px auto 0;
+  border: 0;
+  background: none;
+  color: #6a5792;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  text-align: center;
+}
+.dev-bypass-link:hover {
+  text-decoration: underline;
 }
 
-.dev-bypass-button:hover {
-  background: var(--c-lavender);
-}
-
-.dev-tag {
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--c-purple-primary);
-  color: white;
-  font-size: 10px;
-  font-family: var(--font-mono);
-}
-
-.card-footer {
-  margin-top: 24px;
+.auth-back {
+  margin-top: 14px;
   text-align: center;
 }
 
-.card-footer small {
-  color: var(--c-muted);
+.back-home-link {
+  color: #756e81;
   font-size: 12px;
-  line-height: 1.6;
+  text-decoration: none;
+}
+.back-home-link:hover {
+  text-decoration: underline;
 }
 
-/* 动效过渡 */
+/* 页脚 */
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  border-top: 1px solid #ebe8ef;
+  color: #625c6c;
+  font-size: 12px;
+}
+
+.site-footer nav {
+  display: flex;
+  gap: 24px;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 过渡动效 */
 .fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.25s ease;
-}
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
+.fade-slide-leave-active,
 .fade-mode-enter-active,
 .fade-mode-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
-.fade-mode-enter-from {
-  opacity: 0;
-  transform: translateX(8px);
-}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to,
+.fade-mode-enter-from,
 .fade-mode-leave-to {
   opacity: 0;
-  transform: translateX(-8px);
+  transform: translateY(-5px);
 }
 
 /* 响应式断点适配 */
 @media (max-width: 960px) {
+  .login-page {
+    grid-template-rows: 70px auto 55px;
+  }
+  .site-header {
+    padding: 0 24px;
+  }
   .login-container {
     grid-template-columns: 1fr;
-    max-width: 520px;
+    max-width: 480px;
     gap: 36px;
-  }
-  .journal-hero {
-    text-align: center;
-    align-items: center;
-  }
-  .security-guarantee {
-    justify-content: center;
+    padding: 32px 0 48px;
   }
 }
 
-@media (max-width: 560px) {
-  .login-page {
-    padding: 20px 16px;
+@media (max-width: 520px) {
+  .login-container {
+    width: calc(100% - 32px);
+    padding-top: 20px;
   }
-  .auth-card {
-    padding: 30px 22px;
-    border-radius: var(--radius-lg);
+  .auth-tabs button {
+    font-size: 12px;
   }
-  .hero-title {
-    font-size: 32px;
+  .site-footer {
+    padding: 0 16px;
+  }
+  .site-footer span {
+    display: none;
+  }
+  .site-footer nav {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

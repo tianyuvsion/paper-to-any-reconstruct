@@ -1,15 +1,15 @@
 <template>
   <form class="auth-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label for="invite-email" class="form-label">受邀学者邮箱</label>
+      <label for="invite-email" class="form-label">邮箱地址</label>
       <div class="input-shell carved-well">
         <input
           id="invite-email"
           v-model.trim="email"
           type="email"
           required
-          autocomplete="email"
-          placeholder="scholar@university.edu"
+          autocomplete="username"
+          placeholder="输入受邀邮箱地址"
           class="carved-native-input"
           :disabled="loading"
         />
@@ -18,22 +18,33 @@
 
     <div class="form-group">
       <div class="label-row">
-        <label for="invite-code" class="form-label">内测受邀密钥</label>
-        <span class="field-tag">Invite Code</span>
+        <label for="invite-code" class="form-label">内测口令</label>
+        <button
+          type="button"
+          class="toggle-pwd-btn"
+          @click="showPassword = !showPassword"
+        >
+          {{ showPassword ? '隐藏' : '显示' }}
+        </button>
       </div>
       <div class="input-shell carved-well">
         <input
           id="invite-code"
           v-model="accessCode"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           required
           autocomplete="current-password"
-          placeholder="输入由团队发放的邀请码"
+          placeholder="输入此账号的内测口令"
           class="carved-native-input"
           :disabled="loading"
         />
       </div>
-      <span class="field-hint">受邀成员共用测试空间，上传的论文将可在共享研究库中核验。</span>
+      <div class="login-options">
+        <label class="check">
+          <input v-model="rememberMe" type="checkbox" />
+          <span>记住账号</span>
+        </label>
+      </div>
     </div>
 
     <button
@@ -41,7 +52,7 @@
       class="primary-submit-btn carved-pressable"
       :disabled="loading || !isValid"
     >
-      <span v-if="!loading">进入共享研究空间</span>
+      <span v-if="!loading">登录</span>
       <span v-else class="loading-state">
         <span class="spinner"></span>
         <span>正在核验证据与凭据…</span>
@@ -64,6 +75,8 @@ const emit = defineEmits<{
 
 const email = ref('')
 const accessCode = ref('')
+const showPassword = ref(false)
+const rememberMe = ref(false)
 
 const isValid = computed(() => {
   return email.value.includes('@') && accessCode.value.trim().length > 0
@@ -82,7 +95,7 @@ function handleSubmit() {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .form-group {
@@ -103,10 +116,16 @@ function handleSubmit() {
   color: var(--c-ink);
 }
 
-.field-tag {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--c-muted);
+.toggle-pwd-btn {
+  border: 0;
+  background: transparent;
+  color: var(--c-purple-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.toggle-pwd-btn:hover {
+  text-decoration: underline;
 }
 
 .input-shell {
@@ -134,15 +153,29 @@ function handleSubmit() {
   outline-offset: -1px;
 }
 
-.field-hint {
-  font-size: 11px;
-  color: var(--c-muted);
-  line-height: 1.5;
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #625b6e;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.login-options label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+.login-options input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--c-purple-primary);
 }
 
 .primary-submit-btn {
   margin-top: 6px;
-  padding: 16px 22px;
+  padding: 15px 22px;
   border: 0;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--c-purple-primary), var(--c-purple-secondary));

@@ -1,7 +1,7 @@
 <template>
   <form class="auth-form" @submit.prevent="handleSubmit">
     <div class="form-group">
-      <label for="pwd-email" class="form-label">注册账号邮箱</label>
+      <label for="pwd-email" class="form-label">邮箱地址</label>
       <div class="input-shell carved-well">
         <input
           id="pwd-email"
@@ -9,7 +9,7 @@
           type="email"
           required
           autocomplete="username"
-          placeholder="scholar@university.edu"
+          placeholder="输入邮箱地址"
           class="carved-native-input"
           :disabled="loading"
         />
@@ -18,7 +18,7 @@
 
     <div class="form-group">
       <div class="label-row">
-        <label for="pwd-password" class="form-label">登录密码</label>
+        <label for="pwd-password" class="form-label">密码</label>
         <button
           type="button"
           class="toggle-pwd-btn"
@@ -34,12 +34,18 @@
           :type="showPassword ? 'text' : 'password'"
           required
           autocomplete="current-password"
-          placeholder="输入您的账号密码"
+          placeholder="输入密码"
           class="carved-native-input"
           :disabled="loading"
         />
       </div>
-      <span class="field-hint">已注册密码的成员可直接使用密码登录。</span>
+      <div class="login-options">
+        <label class="check">
+          <input v-model="rememberMe" type="checkbox" />
+          <span>记住账号</span>
+        </label>
+        <button type="button" class="forgot-pwd-btn">忘记密码？</button>
+      </div>
     </div>
 
     <button
@@ -47,7 +53,7 @@
       class="primary-submit-btn carved-pressable"
       :disabled="loading || !isValid"
     >
-      <span v-if="!loading">验证密码并登入</span>
+      <span v-if="!loading">登录</span>
       <span v-else class="loading-state">
         <span class="spinner"></span>
         <span>正在核验凭据…</span>
@@ -71,6 +77,7 @@ const emit = defineEmits<{
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const rememberMe = ref(false)
 
 const isValid = computed(() => {
   return email.value.includes('@') && password.value.length > 0
@@ -89,7 +96,7 @@ function handleSubmit() {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .form-group {
@@ -147,15 +154,40 @@ function handleSubmit() {
   outline-offset: -1px;
 }
 
-.field-hint {
-  font-size: 11px;
-  color: var(--c-muted);
-  line-height: 1.5;
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #625b6e;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.login-options label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+.login-options input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--c-purple-primary);
+}
+
+.forgot-pwd-btn {
+  border: 0;
+  background: transparent;
+  color: #756e81;
+  font-size: 12px;
+  cursor: pointer;
+}
+.forgot-pwd-btn:hover {
+  text-decoration: underline;
 }
 
 .primary-submit-btn {
   margin-top: 6px;
-  padding: 16px 22px;
+  padding: 15px 22px;
   border: 0;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--c-purple-primary), var(--c-purple-secondary));
