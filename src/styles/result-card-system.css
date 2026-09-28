@@ -159,6 +159,67 @@
   color:currentColor;
 }
 
+/* 原版 3D 机械对象：反馈只在控制器确认播放后出现，撑满唱片区域 */
+object-motion[data-effect=notes] .object-feedback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+object-motion[data-effect=notes][data-playing=true] .object-feedback {
+  opacity: 1;
+}
+object-motion[data-effect=notes] .object-feedback i {
+  position: absolute;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #f5e7c9;
+  font-size: 26px;
+  font-style: normal;
+  text-shadow: 0 2px 8px rgba(82, 58, 114, 0.45);
+  opacity: 0;
+  animation: object-spark 2.5s ease-out infinite;
+  animation-play-state: paused;
+}
+/* 三枚音符正正好好分布在黑胶胶片表面，从胶片上方升腾浮出 */
+object-motion[data-effect=notes] .object-feedback i:nth-child(1) {
+  left: 50%;
+  top: 36%;
+}
+object-motion[data-effect=notes] .object-feedback i:nth-child(2) {
+  left: 62%;
+  top: 32%;
+  animation-delay: 0.65s;
+}
+object-motion[data-effect=notes] .object-feedback i:nth-child(3) {
+  left: 38%;
+  top: 40%;
+  animation-delay: 1.3s;
+}
+object-motion[data-effect=notes][data-playing=true] .object-feedback i {
+  animation-play-state: running;
+}
+@keyframes object-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 10px) scale(0.65);
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(16px, -55px) scale(1.1);
+  }
+}
+
 /* 社交卡片/导读样式 */
 .social-cover{
   position:relative;

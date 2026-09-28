@@ -123,26 +123,15 @@
             <div class="rcs-top"><span>通勤播客</span></div>
             <h3>听懂千秒实验</h3>
             <div class="rcs-art">
-              <object-motion
-                kind="audioExplanation"
-                class="object-motion"
-                data-effect="notes"
-                data-mechanism="false"
-                aria-hidden="true"
-                data-active="false"
-                data-playing="false"
-                data-frame="0"
-                data-blended="true"
-              >
+              <!-- 原项目 44 帧音乐机：0–11 帧落针，12–43 帧循环播放。 -->
+              <object-motion kind="audioExplanation">
                 <img
                   class="function-render"
-                  :src="'/ui/local-demo/art-proof/objects-v2/audioExplanation.png'"
+                  src="https://paper-to-any.8-218-121-139.sslip.io/ui/local-demo/art-proof/objects-v2/audioExplanation.png"
                   alt=""
                   loading="lazy"
                   draggable="false"
-                  @error="(e) => ((e.target as HTMLImageElement).src = 'https://paper-to-any.8-218-121-139.sslip.io/ui/local-demo/art-proof/objects-v2/audioExplanation.png')"
                 />
-                <span class="object-feedback" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></span>
               </object-motion>
             </div>
             <div class="rcs-bottom"><span>EAST · 独立示例</span><i aria-hidden="true">↗</i></div>
