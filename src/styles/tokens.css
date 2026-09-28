@@ -1,0 +1,52 @@
+:root {
+  color-scheme: light;
+
+  /* 核心学术色板 (承接原系统设计哲学) */
+  --c-purple-primary: #35206d;      /* 典藏紫：主按键、品牌标识底色 */
+  --c-purple-secondary: #513995;    /* 交互紫：悬浮态、高亮锚点 */
+  --c-purple-deep: #1c1630;         /* 夜幕紫：最深衬底与强调色 */
+  --c-lavender: #f0eafb;            /* 浅薰衣草：主高亮槽、强调标签背景 */
+  --c-lavender-soft: #f7f4fb;       /* 极浅紫底：输入框底色、次级槽底 */
+  --c-ground: #f8f6fb;              /* 全局背景色：柔和不刺眼的米紫灰底 */
+  --c-paper: #ffffff;               /* 纯白纸张卡片底色 */
+  --c-line: #e1dee7;                /* 细分割线 */
+  --c-line-soft: rgba(67, 54, 93, 0.08);
+
+  /* 墨字层次 */
+  --c-ink: #18141f;                 /* 主字墨黑：大标题与强调文案 */
+  --c-copy: #625d6d;                /* 论述灰：正文描述与段落 */
+  --c-muted: #918a9c;               /* 注脚浅灰：辅助元信息、失效文案 */
+
+  /* 功能语义色 */
+  --c-teal: #167f7a;                /* 学术青：通过核查、高置信度评分 */
+  --c-teal-soft: #d9f1ef;           /* 浅青标签背景 */
+  --c-danger: #a9242d;              /* 警示绯红：校验失败与拦截 */
+  --c-danger-soft: #fdf2f2;         /* 错误轻量底色 */
+  --c-success: #147847;             /* 成功绿 */
+  --c-success-soft: #e3f4ea;
+
+  /* 字体排印 */
+  --font-serif: Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", serif;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SFMono-Regular", "Roboto Mono", Menlo, Consolas, monospace;
+
+  /* 凹凸光影语义 (统一 135° 光源) */
+  /* 凸起 (Raised)：卡片、独立按钮、成果浮雕 */
+  --carved-raised-sm: 4px 5px 12px rgba(65, 50, 88, 0.08), -3px -3px 9px rgba(255, 255, 255, 0.85);
+  --carved-raised-md: 7px 7px 18px rgba(88, 70, 121, 0.10), -6px -6px 16px rgba(255, 255, 255, 0.96);
+  --carved-raised-lg: 15px 15px 34px rgba(88, 70, 121, 0.14), -11px -11px 28px rgba(255, 255, 255, 0.98);
+  --carved-card-shadow: 0 20px 60px rgba(48, 33, 80, 0.08);
+
+  /* 凹陷 (Inset)：输入框槽位、按下状态、激活 Tab */
+  --carved-inset-sm: inset 2px 2px 5px rgba(76, 59, 108, 0.09), inset -2px -2px 5px rgba(255, 255, 255, 0.9);
+  --carved-inset-md: inset 3px 3px 7px rgba(76, 59, 108, 0.12), inset -3px -3px 7px rgba(255, 255, 255, 0.92);
+  --carved-inset-deep: inset 5px 6px 14px rgba(70, 51, 105, 0.15), inset -4px -5px 12px rgba(255, 255, 255, 0.95);
+
+  /* 圆角层次 */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 9999px;
+}

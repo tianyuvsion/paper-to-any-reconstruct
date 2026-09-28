@@ -1,0 +1,46 @@
+/* Carved UI 核心浮雕与质感样式系统 */
+
+/* 纸质与浮雕卡片 */
+.carved-card {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--carved-card-shadow);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 凹槽容器 (Tab 轨道、输入框基座) */
+.carved-well {
+  background: var(--c-lavender-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--carved-inset-md);
+  border: 1px solid rgba(225, 222, 231, 0.6);
+}
+
+/* 轻量凹槽 */
+.carved-well-sm {
+  background: var(--c-lavender-soft);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--carved-inset-sm);
+  border: 1px solid rgba(225, 222, 231, 0.5);
+}
+
+/* 物理按压反馈类 */
+.carved-pressable {
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.carved-pressable:active:not(:disabled) {
+  transform: translateY(1.5px) scale(0.99);
+  box-shadow: var(--carved-inset-sm);
+}
+
+/* 学术大标题衬线 */
+.academic-serif {
+  font-family: var(--font-serif);
+}
+
+/* 辅文与等宽数字 */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
