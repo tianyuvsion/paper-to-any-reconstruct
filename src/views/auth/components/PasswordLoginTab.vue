@@ -17,17 +17,8 @@
     </div>
 
     <div class="form-group">
-      <div class="label-row">
-        <label for="pwd-password" class="form-label">密码</label>
-        <button
-          type="button"
-          class="toggle-pwd-btn"
-          @click="showPassword = !showPassword"
-        >
-          {{ showPassword ? '隐藏' : '显示' }}
-        </button>
-      </div>
-      <div class="input-shell carved-well">
+      <label for="pwd-password" class="form-label">密码</label>
+      <div class="password-input-wrapper carved-well">
         <input
           id="pwd-password"
           v-model="password"
@@ -38,6 +29,21 @@
           class="carved-native-input"
           :disabled="loading"
         />
+        <!-- 输入行内部右侧的小眼睛按钮 -->
+        <button
+          type="button"
+          class="password-eye"
+          :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+          :aria-pressed="showPassword"
+          :title="showPassword ? '隐藏密码' : '显示密码'"
+          @click="showPassword = !showPassword"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+            <circle cx="12" cy="12" r="3" />
+            <path v-if="showPassword" d="m3 3 18 18" />
+          </svg>
+        </button>
       </div>
       <div class="login-options">
         <label class="check">
@@ -105,31 +111,20 @@ function handleSubmit() {
   gap: 7px;
 }
 
-.label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .form-label {
   font-size: 13px;
   font-weight: 700;
   color: var(--c-ink);
 }
 
-.toggle-pwd-btn {
-  border: 0;
-  background: transparent;
-  color: var(--c-purple-secondary);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 2px 6px;
-}
-.toggle-pwd-btn:hover {
-  text-decoration: underline;
+.input-shell {
+  padding: 3px 5px;
 }
 
-.input-shell {
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   padding: 3px 5px;
 }
 
@@ -144,6 +139,10 @@ function handleSubmit() {
   font-family: inherit;
 }
 
+.password-input-wrapper .carved-native-input {
+  padding-right: 48px;
+}
+
 .carved-native-input::placeholder {
   color: #a7a1b3;
 }
@@ -152,6 +151,30 @@ function handleSubmit() {
   border-radius: var(--radius-sm);
   outline: 2px solid var(--c-purple-secondary);
   outline-offset: -1px;
+}
+
+/* 输入行内部右侧的小眼睛按钮 */
+.password-eye {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #716a80;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  padding: 0;
+}
+
+.password-eye:hover {
+  background: rgba(81, 57, 149, 0.08);
+  color: var(--c-purple-primary);
 }
 
 .login-options {
