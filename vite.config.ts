@@ -44,7 +44,8 @@ function localUiPlugin(): Plugin {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const backendTarget = env.VITE_BACKEND_URL || 'http://127.0.0.1:8000'
+  const backendTarget = env.VITE_BACKEND_URL || 'https://paper-to-any.8-218-121-139.sslip.io'
+  const targetUrl = new URL(backendTarget)
 
   return {
     plugins: [
@@ -72,7 +73,25 @@ export default defineConfig(({ mode }) => {
           target: backendTarget,
           changeOrigin: true,
           secure: false,
-          ws: true
+          ws: true,
+          headers: {
+            Origin: targetUrl.origin,
+            Referer: `${targetUrl.origin}/`
+          },
+          cookieDomainRewrite: {
+            '*': ''
+          },
+          onProxyRes(proxyRes: any) {
+            // 解决本地 http 环境下 Secure Cookie 无法保存的问题
+            const setCookie = proxyRes.headers['set-cookie']
+            if (setCookie) {
+              proxyRes.headers['set-cookie'] = setCookie.map((cookie: string) =>
+                cookie
+                  .replace(/;\s*Secure/gi, '')
+                  .replace(/;\s*SameSite=Strict/gi, '; SameSite=Lax')
+              )
+            }
+          }
         }
       }
     },

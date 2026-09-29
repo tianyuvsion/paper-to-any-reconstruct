@@ -154,7 +154,10 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const activeTab = ref<'invite' | 'password'>('password')
+// 优先默认采用内测口令登录（原项目生产环境的核心有效登录方式）
+const activeTab = ref<'invite' | 'password'>(
+  (route.query.method as string) === 'password' ? 'password' : 'invite'
+)
 
 async function navigateAfterLogin() {
   const redirect = (route.query.redirect as string) || '/workspace'

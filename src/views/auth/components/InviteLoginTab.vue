@@ -68,8 +68,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { InviteLoginPayload } from '@/types/auth'
+
+const LAST_ACCOUNT_KEY = 'pta.east.last-account.v1'
 
 const props = defineProps<{
   loading: boolean
@@ -84,12 +86,40 @@ const accessCode = ref('')
 const showPassword = ref(false)
 const rememberMe = ref(false)
 
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem(LAST_ACCOUNT_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (parsed?.email) {
+        email.value = parsed.email
+        rememberMe.value = true
+      }
+    }
+  } catch {
+    // 忽略 localStorage 读取异常
+  }
+})
+
 const isValid = computed(() => {
   return email.value.includes('@') && accessCode.value.trim().length > 0
 })
 
 function handleSubmit() {
   if (!isValid.value || props.loading) return
+  if (rememberMe.value) {
+    try {
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: email.value }))
+    } catch {
+      // 忽略
+    }
+  } else {
+    try {
+      localStorage.removeItem(LAST_ACCOUNT_KEY)
+    } catch {
+      // 忽略
+    }
+  }
   emit('submit', {
     email: email.value,
     access_code: accessCode.value.trim()
