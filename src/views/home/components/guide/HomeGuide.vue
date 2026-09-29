@@ -350,7 +350,7 @@
         class="guide-live-reading"
         title="试用带章节选择的连续图文阅读"
         loading="lazy"
-        src="https://paper-to-any.8-218-121-139.sslip.io/ui/local-demo/reading-specimen.html?edition=originalReadingGuide&amp;embed=1"
+        src="/ui/local-demo/reading-specimen.html?edition=originalReadingGuide&embed=1"
         style="display:block;width:100%;height:650px;border:1px solid #ddd5e5;border-radius:24px"
       ></iframe>
       <div class="guide-features">

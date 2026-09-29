@@ -31,8 +31,32 @@ function localUiPlugin(): Plugin {
               '.mjs': 'application/javascript'
             }
             res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream')
-            res.setHeader('Cache-Control', 'public, max-age=31536000')
-            fs.createReadStream(filePath).pipe(res)
+            res.setHeader('Accept-Ranges', 'bytes')
+
+            const stat = fs.statSync(filePath)
+            const totalSize = stat.size
+            const range = req.headers.range
+
+            if (range) {
+              // 关键：处理浏览器 HTML5 <video> / <audio> 的 HTTP 206 Range 分段流媒体请求
+              const parts = range.replace(/bytes=/, '').split('-')
+              const start = parseInt(parts[0], 10)
+              const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1
+              const chunkSize = end - start + 1
+
+              res.statusCode = 206
+              res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`)
+              res.setHeader('Content-Length', chunkSize)
+              res.setHeader('Cache-Control', 'public, max-age=31536000')
+
+              const stream = fs.createReadStream(filePath, { start, end })
+              stream.pipe(res)
+            } else {
+              res.statusCode = 200
+              res.setHeader('Content-Length', totalSize)
+              res.setHeader('Cache-Control', 'public, max-age=31536000')
+              fs.createReadStream(filePath).pipe(res)
+            }
             return
           }
         }
