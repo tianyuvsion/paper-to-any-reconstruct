@@ -5,10 +5,9 @@
 
     <!-- 2. 三栏自适应工作台布局 -->
     <WorkbenchLayout>
-      <!-- 左侧资料栏 -->
+      <!-- 左侧资料栏 (100% 对齐原版工作台侧边栏) -->
       <template #rail>
-        <RailPaperList />
-        <RailConversations />
+        <WorkspaceSidebar />
       </template>
 
       <!-- 中间主研读舞台 -->
@@ -57,8 +56,7 @@ import { useWorkbenchStore } from '@/stores/workbench'
 import type { AcademicCard, ReadingMode } from '@/types/workbench'
 import WorkbenchHeader from './components/layout/WorkbenchHeader.vue'
 import WorkbenchLayout from './components/layout/WorkbenchLayout.vue'
-import RailPaperList from './components/rail/RailPaperList.vue'
-import RailConversations from './components/rail/RailConversations.vue'
+import WorkspaceSidebar from './components/rail/WorkspaceSidebar.vue'
 import StageNavTabs from './components/stage/StageNavTabs.vue'
 import ChatStream from './components/stage/chat/ChatStream.vue'
 import ChatComposer from './components/stage/chat/ChatComposer.vue'

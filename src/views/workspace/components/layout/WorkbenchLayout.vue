@@ -47,9 +47,10 @@ const workbenchStore = useWorkbenchStore()
 }
 
 .layout-rail {
-  background: #fbf9fd;
-  border-right: 1px solid #e1dee7;
-  overflow-y: auto;
+  background: #ffffff;
+  border-right: 1px solid #ebe8ef;
+  overflow: hidden;
+  width: 260px;
   min-width: 260px;
 }
 

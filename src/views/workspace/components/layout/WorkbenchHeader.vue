@@ -1,20 +1,23 @@
 <template>
   <header class="wb-header">
-    <!-- 左侧：返回首页与品牌 -->
+    <!-- 左侧：展开侧栏按钮与面包屑导航 (对齐原版 workspace-toolbar) -->
     <div class="header-left">
-      <router-link to="/" class="brand-link" aria-label="返回首页">
-        <span class="brand-mark">R²</span>
-        <span class="brand-name">Paper <span>to</span> Any</span>
-      </router-link>
       <button
+        v-if="!workbenchStore.isRailOpen"
         type="button"
-        class="rail-toggle-btn"
-        :title="workbenchStore.isRailOpen ? '折叠资料栏' : '展开资料栏'"
+        class="sidebar-open-btn"
+        title="展开侧边栏"
+        aria-label="展开侧边栏"
         @click="workbenchStore.toggleRail"
       >
-        <span class="toggle-icon">☰</span>
-        <span class="toggle-text">{{ workbenchStore.isRailOpen ? '收起' : '资料' }}</span>
+        <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3h18v18H3z M9 3v18" />
+        </svg>
       </button>
+      <div class="workspace-breadcrumb">
+        <span class="version-tag">3.1.0</span>
+        <span class="crumb-text">研读工作空间</span>
+      </div>
     </div>
 
     <!-- 中间：论文标题与三模式切换 -->
@@ -115,34 +118,51 @@ const authStore = useAuthStore()
   flex-shrink: 0;
 }
 
-.brand-link {
+.sidebar-open-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e7e2ed;
+  border-radius: 8px;
+  background: transparent;
+  color: #6a6175;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.sidebar-open-btn:hover {
+  background: #f7f4fb;
+  color: #35206d;
+  border-color: #cbbedf;
+}
+
+.panel-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.workspace-breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
-  text-decoration: none;
-  color: #18141f;
+  font-size: 13px;
+  color: #625972;
 }
 
-.brand-mark {
-  width: 32px;
-  height: 32px;
-  background: #35206d;
-  color: #fff;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 700;
+.version-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #8c8299;
+  background: #f4eff9;
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
-.brand-name {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
-}
-.brand-name span {
-  color: #7254b3;
+.crumb-text {
+  font-weight: 600;
+  color: #29253a;
 }
 
 .rail-toggle-btn, .dock-toggle-btn {
