@@ -42,6 +42,49 @@ function localUiPlugin(): Plugin {
   }
 }
 
+// 实时访客监控插件：记录外部通过 Cloudflare 穿透访问的访客 IP、设备与浏览行为
+function accessLoggerPlugin(): Plugin {
+  return {
+    name: 'cf-visitor-logger',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url || '/'
+        // 过滤掉高频内部静态模块，聚焦核心页面与 API 请求
+        const isCoreRoute =
+          url === '/' ||
+          url.startsWith('/login') ||
+          url.startsWith('/workspace') ||
+          url.startsWith('/api/') ||
+          url.includes('.html')
+
+        if (isCoreRoute) {
+          const cfIp = req.headers['cf-connecting-ip'] || req.socket.remoteAddress || '127.0.0.1'
+          const country = req.headers['cf-ipcountry'] || 'CN'
+          const ua = (req.headers['user-agent'] as string) || ''
+          const time = new Date().toLocaleTimeString('zh-CN', { hour12: false })
+
+          let device = '电脑 / 其它'
+          if (/iPhone|iPad|iPod/i.test(ua)) device = '苹果 iOS'
+          else if (/Android/i.test(ua)) device = '安卓手机'
+          else if (/Macintosh/i.test(ua)) device = 'Mac'
+          else if (/Windows/i.test(ua)) device = 'Windows PC'
+
+          const logLine = `[CF 访客 ${time}] 来源: ${cfIp} (${country}) | 设备: ${device} | 动作: ${req.method} ${url}`
+          // 控制台醒目紫色打印
+          console.log(`\x1b[35m${logLine}\x1b[0m`)
+
+          try {
+            fs.appendFileSync('access.log', `${new Date().toISOString()} | ${logLine}\n`)
+          } catch {
+            // 忽略写入异常
+          }
+        }
+        next()
+      })
+    }
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const backendTarget = env.VITE_BACKEND_URL || 'https://paper-to-any.8-218-121-139.sslip.io'
@@ -50,6 +93,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       localUiPlugin(),
+      accessLoggerPlugin(),
       vue({
         template: {
           compilerOptions: {
