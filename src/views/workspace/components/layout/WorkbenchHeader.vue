@@ -77,14 +77,20 @@
         <span class="dock-icon">📖</span>
         <span>{{ workbenchStore.isDockOpen ? '隐藏原文' : '查看原文' }}</span>
       </button>
+
+      <!-- 用户账户头像与下拉菜单 -->
+      <UserAccountDropdown v-if="authStore.isAuthenticated" />
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
 import { useWorkbenchStore } from '@/stores/workbench'
+import { useAuthStore } from '@/stores/auth'
+import UserAccountDropdown from '@/components/account/UserAccountDropdown.vue'
 
 const workbenchStore = useWorkbenchStore()
+const authStore = useAuthStore()
 </script>
 
 <style scoped>

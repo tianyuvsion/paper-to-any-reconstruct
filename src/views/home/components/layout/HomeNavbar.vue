@@ -14,8 +14,8 @@
 
       <!-- 根据登录状态自适应渲染 -->
       <template v-if="authStore.isAuthenticated">
-        <router-link class="btn" to="/workspace">进入研究库</router-link>
-        <span class="scholar-tag" :title="authStore.userDisplayName">{{ authStore.userDisplayName }}</span>
+        <router-link class="btn outline" to="/workspace">进入研究库</router-link>
+        <UserAccountDropdown />
       </template>
       <template v-else>
         <router-link class="btn outline" to="/login">登录</router-link>
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import UserAccountDropdown from '@/components/account/UserAccountDropdown.vue'
 
 const authStore = useAuthStore()
 

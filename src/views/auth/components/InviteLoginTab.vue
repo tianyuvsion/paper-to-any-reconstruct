@@ -24,7 +24,7 @@
           v-model="accessCode"
           :type="showPassword ? 'text' : 'password'"
           required
-          autocomplete="current-password"
+          autocomplete="one-time-code"
           placeholder="输入此账号的内测口令"
           class="carved-native-input"
           :disabled="loading"
@@ -107,9 +107,11 @@ const isValid = computed(() => {
 
 function handleSubmit() {
   if (!isValid.value || props.loading) return
+  const cleanEmail = email.value.trim().toLowerCase()
+  const cleanCode = accessCode.value.trim()
   if (rememberMe.value) {
     try {
-      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: email.value }))
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify({ email: cleanEmail }))
     } catch {
       // 忽略
     }
@@ -121,8 +123,8 @@ function handleSubmit() {
     }
   }
   emit('submit', {
-    email: email.value,
-    access_code: accessCode.value.trim()
+    email: cleanEmail,
+    access_code: cleanCode
   })
 }
 </script>
