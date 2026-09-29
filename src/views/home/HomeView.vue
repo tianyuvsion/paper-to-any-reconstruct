@@ -130,7 +130,15 @@
           </div>
 
           <div class="portal-preview-actions">
-            <button class="btn" @click="handlePrompt(currentPreview?.question || '')">
+            <router-link
+              to="/workspace"
+              class="btn"
+              style="background: #513995;"
+              @click="closePreviewDialog"
+            >
+              进入工作台研读 ↗
+            </router-link>
+            <button class="btn outline" @click="handlePrompt(currentPreview?.question || '')">
               沿着这个问题继续 ↗
             </button>
             <a
@@ -229,8 +237,24 @@ const previewDefinitions: Record<string, {
 const currentPreview = computed(() => previewDefinitions[activePreviewId.value] || previewDefinitions.finding)
 
 function openPreview(id: string) {
-  activePreviewId.value = id
-  previewDialogRef.value?.showModal()
+  // 点击卡片后直接进入工作台核心研读空间，并携带对应卡片与视角参数
+  const modeMap: Record<string, string> = {
+    finding: 'public',
+    audio: 'public',
+    video: 'public',
+    boundary: 'researcher',
+    poster: 'public',
+    source: 'researcher'
+  }
+  const mode = modeMap[id] || 'public'
+  router.push({
+    path: '/workspace',
+    query: {
+      paper: 'east-super-i-mode',
+      card: id,
+      mode
+    }
+  })
 }
 
 function closePreviewDialog() {
