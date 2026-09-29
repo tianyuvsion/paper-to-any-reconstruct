@@ -14,7 +14,7 @@
 
       <!-- 根据登录状态自适应渲染 -->
       <template v-if="authStore.isAuthenticated">
-        <router-link class="btn outline" to="/workspace">进入研究库</router-link>
+        <router-link class="btn" to="/workspace">进入研究库</router-link>
         <UserAccountDropdown />
       </template>
       <template v-else>

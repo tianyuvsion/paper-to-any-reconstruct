@@ -9,6 +9,20 @@
 .portal-header .brand{text-decoration:none;font-size:23px;font-weight:800;letter-spacing:-1.2px;color:#29253a}
 .portal-header .brand span{color:#7e67ae}
 
+/* 原版右上角头像与下拉菜单 (100% 对齐 product-home.css) */
+.product-home-header .home-account,
+.portal-header .home-account{position:relative}
+.home-account summary{list-style:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#e9e1f1;color:#654987;cursor:pointer;font-size:16px;font-weight:650;user-select:none;transition:all .2s ease}
+.home-account summary::-webkit-details-marker{display:none}
+.home-account summary img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.home-account summary:hover{background:#ded3e7;color:#4b327b}
+.home-account>div{position:absolute;right:0;top:52px;min-width:190px;padding:12px;display:grid;gap:5px;background:#fff;border:1px solid #e0d5e9;box-shadow:0 12px 30px #30233822;border-radius:16px;z-index:100;box-sizing:border-box}
+.home-account>div :is(a,button,strong){padding:10px;text-align:left;font-size:14px;border-radius:8px;box-sizing:border-box}
+.home-account>div strong{color:#29253a;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid #f0ebf5;padding-bottom:8px;margin-bottom:2px}
+.home-account>div a{color:#3b2853;text-decoration:none;transition:background .15s ease}
+.home-account>div a:hover,.home-account>div button:hover{background:#f7f2fa;color:#4b327b}
+.home-account>div button{border:0;background:transparent;color:#655078;cursor:pointer;transition:background .15s ease}
+
 .landing:has(.portal),.landing.product-home{max-width:none;padding:0;margin:0;width:100%}
 .portal{color:#2f263c;background:#fffcfa;overflow:clip}
 .portal button,.portal a{font-family:inherit}
