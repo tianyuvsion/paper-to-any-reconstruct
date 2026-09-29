@@ -18,6 +18,8 @@ function localUiPlugin(): Plugin {
           if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
             const ext = path.extname(filePath).toLowerCase()
             const mimeTypes: Record<string, string> = {
+              '.html': 'text/html; charset=utf-8',
+              '.htm': 'text/html; charset=utf-8',
               '.webp': 'image/webp',
               '.png': 'image/png',
               '.jpg': 'image/jpeg',
@@ -26,12 +28,18 @@ function localUiPlugin(): Plugin {
               '.mp3': 'audio/mpeg',
               '.mp4': 'video/mp4',
               '.pdf': 'application/pdf',
-              '.css': 'text/css',
-              '.js': 'application/javascript',
-              '.mjs': 'application/javascript'
+              '.css': 'text/css; charset=utf-8',
+              '.js': 'application/javascript; charset=utf-8',
+              '.mjs': 'application/javascript; charset=utf-8',
+              '.json': 'application/json; charset=utf-8',
+              '.wasm': 'application/wasm'
             }
             res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream')
             res.setHeader('Accept-Ranges', 'bytes')
+
+            const cacheControl = ext === '.html' || ext === '.htm'
+              ? 'no-cache'
+              : 'public, max-age=31536000'
 
             const stat = fs.statSync(filePath)
             const totalSize = stat.size
@@ -47,14 +55,14 @@ function localUiPlugin(): Plugin {
               res.statusCode = 206
               res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`)
               res.setHeader('Content-Length', chunkSize)
-              res.setHeader('Cache-Control', 'public, max-age=31536000')
+              res.setHeader('Cache-Control', cacheControl)
 
               const stream = fs.createReadStream(filePath, { start, end })
               stream.pipe(res)
             } else {
               res.statusCode = 200
               res.setHeader('Content-Length', totalSize)
-              res.setHeader('Cache-Control', 'public, max-age=31536000')
+              res.setHeader('Cache-Control', cacheControl)
               fs.createReadStream(filePath).pipe(res)
             }
             return
