@@ -346,13 +346,8 @@
         <h2>沿着问题，<br>把一篇论文读通。</h2>
         <p>从顶部选择感兴趣的章节，沿图文自然向下阅读。解释和原图并排呈现，随时回到论文核对来源。</p>
       </header>
-      <iframe
-        class="guide-live-reading"
-        title="试用带章节选择的连续图文阅读"
-        loading="lazy"
-        src="/ui/local-demo/reading-specimen.html?edition=originalReadingGuide&embed=1"
-        style="display:block;width:100%;height:650px;border:1px solid #ddd5e5;border-radius:24px"
-      ></iframe>
+      <!-- 原生渲染的原版报刊导读与视频讲解卡片 (杜绝iframe白屏与隔离风险) -->
+      <OriginalReadingGuide />
       <div class="guide-features">
         <div>
           <h3>按问题选章节</h3>
@@ -647,6 +642,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import OriginalReadingGuide from './OriginalReadingGuide.vue'
 
 defineEmits<{
   (e: 'preview', previewId: string): void
