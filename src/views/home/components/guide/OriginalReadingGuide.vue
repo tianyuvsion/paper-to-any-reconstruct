@@ -66,29 +66,16 @@
                 <div class="media-guide-visual">
                   <div class="media-video-wrap">
                     <video
-                      ref="videoPlayerRef"
                       controls
                       playsinline
                       preload="metadata"
                       :poster="steps[0].poster"
                       :src="steps[0].video"
                       aria-label="EAST 证据讲解试看片"
-                      @play="isPlaying = true"
-                      @pause="isPlaying = false"
-                      @ended="handleVideoEnded"
                     >
                       <source :src="steps[0].video" type="video/mp4" />
                       您的浏览器暂不支持该视频播放。
                     </video>
-                    <!-- 原版居中覆盖播放大按钮 -->
-                    <button
-                      v-show="!isPlaying"
-                      type="button"
-                      class="media-play"
-                      @click="playVideo"
-                    >
-                      {{ playBtnText }}
-                    </button>
                   </div>
                   <p class="media-credit">{{ steps[0].credit }}</p>
                 </div>
@@ -105,7 +92,6 @@
                     <span>还不能说明</span>
                     <p>{{ steps[0].boundary }}</p>
                   </div>
-                  <a class="media-source-link" href="#reading-starting-question">看这部分的图文说明 ↓</a>
                 </div>
               </section>
 
@@ -131,7 +117,6 @@
                     <span>还不能说明</span>
                     <p>{{ steps[1].boundary }}</p>
                   </div>
-                  <a class="media-source-link" href="#reading-baseline">看这部分的图文说明 ↓</a>
                 </div>
               </section>
 
@@ -157,7 +142,6 @@
                     <span>还不能说明</span>
                     <p>{{ steps[2].boundary }}</p>
                   </div>
-                  <a class="media-source-link" href="#reading-new-regime">看这部分的图文说明 ↓</a>
                 </div>
               </section>
 
@@ -183,7 +167,6 @@
                     <span>还不能说明</span>
                     <p>{{ steps[3].boundary }}</p>
                   </div>
-                  <a class="media-source-link" href="#reading-comparison">看这部分的图文说明 ↓</a>
                 </div>
               </section>
             </div>
@@ -342,9 +325,6 @@ const activeSectionId = ref('first-screen')
 const activeFigureIndices = reactive<Record<string, number>>({})
 
 const currentStep = ref(0)
-const isPlaying = ref(false)
-const playBtnText = ref('▶ 播放讲解')
-const videoPlayerRef = ref<HTMLVideoElement | null>(null)
 
 // 初始化每个章节的默认第 0 张图
 guideSections.forEach((s) => {
@@ -401,22 +381,6 @@ const steps = [
     credit: '论文原图 9 · 原文第 8 页 · 比较条件见正文'
   }
 ]
-
-async function playVideo() {
-  if (!videoPlayerRef.value) return
-  try {
-    await videoPlayerRef.value.play()
-    isPlaying.value = true
-  } catch (err) {
-    console.warn('播放受阻:', err)
-    playBtnText.value = '▶ 再次点击播放'
-  }
-}
-
-function handleVideoEnded() {
-  isPlaying.value = false
-  playBtnText.value = '↻ 再看一次'
-}
 
 // 顶部下拉框切换：在内部视口中精确平滑滚动
 function handleSelectChange() {
@@ -583,7 +547,7 @@ function handleViewportScroll() {
 
 .media-card-heading {
   margin-bottom: 20px;
-  border-bottom: 2px solid #302838;
+  border-bottom: 1px solid #e2daea;
   padding-bottom: 14px;
 }
 
@@ -675,28 +639,6 @@ function handleViewportScroll() {
   background: #081019;
 }
 
-.media-play {
-  position: absolute;
-  left: 20px;
-  bottom: 20px;
-  padding: 10px 18px;
-  background: #74528e;
-  color: #ffffff;
-  border: 1px solid #cdb9dd;
-  border-radius: 50px;
-  font-size: 13.5px;
-  font-weight: 600;
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  z-index: 2;
-  transition: all 0.2s ease;
-}
-
-.media-play:hover {
-  background: #5d3f74;
-  transform: scale(1.03);
-}
-
 .media-credit {
   font-family: var(--font-sans);
   font-size: 12px;
@@ -760,41 +702,37 @@ function handleViewportScroll() {
 }
 
 .media-look, .media-boundary {
-  padding: 11px 14px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  font-size: 13px;
-  line-height: 1.7;
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 13px 0;
+  margin: 0;
+  border-top: 1px solid #eee7f3;
+  background: none;
+  font-size: 14px;
+  line-height: 1.8;
 }
 
-.media-look {
-  background: #ffffff;
-  border: 1px solid #e5dee9;
-}
 .media-look span {
-  font-weight: 700;
-  color: #35206d;
-  display: block;
-  margin-bottom: 4px;
+  font-family: var(--font-sans);
+  font-weight: 650;
+  color: #55416d;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.media-boundary {
-  background: #fdf5f4;
-  border: 1px solid #f1dedc;
-}
 .media-boundary span {
-  font-weight: 700;
-  color: #9e2a2b;
-  display: block;
-  margin-bottom: 4px;
+  font-family: var(--font-sans);
+  font-weight: 650;
+  color: #654987;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.media-source-link {
-  display: inline-block;
-  font-size: 13px;
-  color: #74528e;
-  font-weight: 600;
-  margin-top: 6px;
+.media-look p, .media-boundary p {
+  margin: 0;
+  color: #2f273b;
 }
 
 /* 页面大标题：沿着图片，继续了解 */
