@@ -24,7 +24,7 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/workspace/WorkspaceView.vue'),
     meta: {
       title: '研究工作台 · Paper to Any',
-      requiresAuth: true
+      requiresAuth: false
     }
   },
   {

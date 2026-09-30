@@ -2,6 +2,7 @@ export type ReadingMode = 'public' | 'researcher' | 'enterprise'
 export type ResultVersion = 'v1' | 'v2' | 'source'
 export type StageTab = 'chat' | 'reading' | 'notes'
 export type SourceViewMode = 'pdf' | 'text'
+export type SidebarNav = 'library' | 'chat' | 'history' | 'outputs' | 'tasks' | 'settings' | 'import'
 
 export interface PaperMeta {
   id: string

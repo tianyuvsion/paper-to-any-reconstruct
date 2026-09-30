@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ReadingMode, ResultVersion, StageTab, PaperMeta, AcademicCard, ScoreItem, ChatTurn } from '@/types/workbench'
+import type { ReadingMode, ResultVersion, StageTab, SidebarNav, PaperMeta, AcademicCard, ScoreItem, ChatTurn } from '@/types/workbench'
 
 export const useWorkbenchStore = defineStore('workbench', () => {
   // 当前研读论文
@@ -18,6 +18,9 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   // 模式与版本
   const currentMode = ref<ReadingMode>('public')
   const currentVersion = ref<ResultVersion>('v2')
+
+  // 左侧栏当前选中导航 ('library' | 'chat' | 'history' | 'outputs' | 'tasks' | 'settings' | 'import')
+  const activeSidebarNav = ref<SidebarNav>('library')
 
   // 主舞台当前 Tab ('chat' | 'reading' | 'notes')
   const activeTab = ref<StageTab>('reading')
@@ -129,6 +132,15 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     activeTab.value = tab
   }
 
+  function setSidebarNav(nav: SidebarNav) {
+    activeSidebarNav.value = nav
+    if (nav === 'chat') {
+      activeTab.value = 'chat'
+    } else if (nav === 'outputs' || nav === 'library') {
+      activeTab.value = 'reading'
+    }
+  }
+
   function toggleRail() {
     isRailOpen.value = !isRailOpen.value
   }
@@ -181,6 +193,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     currentPaper,
     currentMode,
     currentVersion,
+    activeSidebarNav,
     activeTab,
     isRailOpen,
     isDockOpen,
@@ -196,6 +209,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     // Actions
     setMode,
     setVersion,
+    setSidebarNav,
     setStageTab,
     toggleRail,
     toggleDock,

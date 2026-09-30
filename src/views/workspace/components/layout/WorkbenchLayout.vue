@@ -26,7 +26,7 @@ const workbenchStore = useWorkbenchStore()
 <style scoped>
 .wb-layout {
   display: grid;
-  grid-template-columns: 260px 1fr 480px;
+  grid-template-columns: 240px 1fr 480px;
   height: calc(100vh - 64px);
   width: 100%;
   overflow: hidden;
@@ -39,7 +39,7 @@ const workbenchStore = useWorkbenchStore()
 }
 
 .wb-layout.no-dock {
-  grid-template-columns: 260px 1fr 0px;
+  grid-template-columns: 240px 1fr 0px;
 }
 
 .wb-layout.no-rail.no-dock {
@@ -47,11 +47,11 @@ const workbenchStore = useWorkbenchStore()
 }
 
 .layout-rail {
-  background: #ffffff;
-  border-right: 1px solid #ebe8ef;
+  background: #f7f6fa;
+  border-right: 1px solid #eeeaf2;
   overflow: hidden;
-  width: 260px;
-  min-width: 260px;
+  width: 240px;
+  min-width: 240px;
 }
 
 .layout-stage {
