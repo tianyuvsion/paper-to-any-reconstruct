@@ -148,8 +148,8 @@ function handleNewResearch() {
   width: 240px;
   min-width: 240px;
   height: 100vh;
-  background: #f7f6fa;
-  border-right: 1px solid #eeeaf2;
+  background: #F6F3FC;
+  border-right: 1px solid #ebe5f5;
   display: flex;
   flex-direction: column;
   padding: 24px 14px 20px 14px;
@@ -264,13 +264,13 @@ function handleNewResearch() {
 }
 
 .nav-item:hover {
-  background: #f1ecf7;
+  background: #ede6f7;
   color: #312347;
 }
 
 /* 高亮激活项 (100% 对齐设计稿中的“研究库”) */
 .nav-item.active {
-  background: #eee7f7;
+  background: #ebdff7;
   color: #593687;
   font-weight: 650;
 }
