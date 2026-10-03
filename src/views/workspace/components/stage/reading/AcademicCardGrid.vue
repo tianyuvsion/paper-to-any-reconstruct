@@ -1,5 +1,23 @@
 <template>
-  <div class="academic-card-grid">
+  <section class="site-status" aria-live="polite">
+    <p v-if="workbenchStore.siteLoading" class="status-message">
+      正在读取这篇论文的结构化卡片…
+    </p>
+    <p v-else-if="workbenchStore.siteError" class="status-message status-error">
+      {{ workbenchStore.siteError }}
+    </p>
+    <p v-else-if="!workbenchStore.researchSite" class="status-message">
+      当前工作台还没有连接到已解析的论文。通过带有 <code>paperId</code> 的论文入口打开后，
+      这里会读取后端生成的卡片。
+    </p>
+    <p v-else class="status-message">
+      {{ workbenchStore.researchSite.modes[workbenchStore.currentMode].label }}
+      · {{ workbenchStore.researchSite.modes[workbenchStore.currentMode].judgement }}
+      · {{ workbenchStore.researchSite.generator.kind === 'extractive_preview' ? '基于原文提取，未评分' : 'AI 编译' }}
+    </p>
+  </section>
+
+  <div v-if="workbenchStore.academicCards.length" class="academic-card-grid">
     <article
       v-for="card in workbenchStore.academicCards"
       :key="card.id"
@@ -23,9 +41,17 @@
         <h4 class="card-title">{{ card.title }}</h4>
         <p class="card-summary">{{ card.summary }}</p>
 
-        <div v-if="card.keyFinding" class="key-finding-chip">
-          <strong>数据证据：</strong>
-          <span>{{ card.keyFinding }}</span>
+        <div v-if="card.evidence.length" class="evidence-list">
+          <button
+            v-for="(item, index) in card.evidence"
+            :key="`${item.page}-${index}`"
+            type="button"
+            class="evidence-item"
+            @click="workbenchStore.jumpToSource(item.page, item.quote)"
+          >
+            <span class="evidence-page">P.{{ item.page }}</span>
+            <span>{{ item.quote }}</span>
+          </button>
         </div>
       </div>
 
@@ -35,7 +61,7 @@
           class="card-ask-btn"
           @click="handleAskWithCard(card)"
         >
-          <span>💬 将此结论用于提问</span>
+          <span>💬 基于此卡片提问</span>
         </button>
         <button
           type="button"
@@ -47,6 +73,12 @@
       </footer>
     </article>
   </div>
+  <p
+    v-else-if="workbenchStore.researchSite && !workbenchStore.siteLoading"
+    class="status-message empty-message"
+  >
+    这个阅读视角暂时没有可展示的卡片。
+  </p>
 </template>
 
 <script setup lang="ts">
@@ -74,6 +106,25 @@ function handleAskWithCard(card: AcademicCard) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+}
+
+.site-status {
+  padding: 12px 24px 0;
+}
+
+.status-message {
+  margin: 0;
+  color: #70697b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.status-error {
+  color: #a43f43;
+}
+
+.empty-message {
+  padding: 24px;
 }
 
 .research-flow-card {
@@ -138,13 +189,39 @@ function handleAskWithCard(card: AcademicCard) {
   color: #625d6d;
 }
 
-.key-finding-chip {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #f9f8fb;
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evidence-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
   border-left: 3px solid #7254b3;
+  border-radius: 0 8px 8px 0;
+  background: #f9f8fb;
+  color: #51495e;
+  font: inherit;
   font-size: 12px;
-  color: #35206d;
+  line-height: 1.6;
+  text-align: left;
+  cursor: pointer;
+}
+
+.evidence-item:hover {
+  background: #f0eafb;
+}
+
+.evidence-page {
+  flex: 0 0 auto;
+  color: #513995;
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
 .card-actions {

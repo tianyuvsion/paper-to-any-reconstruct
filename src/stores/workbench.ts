@@ -1,19 +1,34 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { ReadingMode, ResultVersion, StageTab, SidebarNav, PaperMeta, AcademicCard, ScoreItem, ChatTurn } from '@/types/workbench'
+import { computed, ref } from 'vue'
+import type {
+  AcademicCard,
+  ChatTurn,
+  PaperMeta,
+  ReadingMode,
+  ResultVersion,
+  ScoreItem,
+  SidebarNav,
+  StageTab
+} from '@/types/workbench'
+import type { ResearchSite, SiteCard } from '@/types/site'
+import type { PaperDetail, PaperSummary } from '@/types/papers'
+import { papersApi } from '@/api/papers'
 
 export const useWorkbenchStore = defineStore('workbench', () => {
   // 当前研读论文
   const currentPaper = ref<PaperMeta>({
-    id: 'east-super-i-mode',
-    title: 'A 1056-second long-pulse high-confinement plasma regime on EAST',
-    authors: ['H. Q. Liu', 'X. Z. Gong', 'J. P. Qian', 'B. Shen', 'G. S. Xu', 'EAST Team'],
-    journal: 'Science Advances',
-    year: 2023,
-    doi: '10.1126/sciadv.abq5273',
-    status: 'ready',
-    pageCount: 11
+    id: '',
+    title: '尚未选择论文',
+    authors: [],
+    originalFilename: '',
+    status: 'uploaded',
+    pageCount: 0
   })
+  const papers = ref<PaperSummary[]>([])
+  const paperPages = ref<PaperDetail['pages']>([])
+  const libraryLoading = ref(false)
+  const uploadLoading = ref(false)
+  const libraryError = ref('')
 
   // 模式与版本
   const currentMode = ref<ReadingMode>('public')
@@ -51,45 +66,158 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     { id: 'limitations', label: '适用边界', score: 7.6, maxScore: 10, reasoning: '实验为纯氘长脉冲运行，尚未验证氘氚聚变燃烧与净能量增益条件。' }
   ])
 
-  // 学术卡片流
-  const academicCards = ref<AcademicCard[]>([
-    {
-      id: 'keyFindings',
-      name: '核心发现',
-      kind: 'content',
-      tone: 'lime',
-      title: '高约束运行进入千秒',
-      summary: 'EAST 装置在长脉冲稳态高约束模 (Super I-mode) 下连续运行达到 1056 秒，实现了能量约束与粒子排除的长时间平衡。',
-      keyFinding: '放电时长 1056 秒 · 能量约束时间 ~100 ms',
-      pageAnchor: 1,
-      quote: 'A steady-state long-pulse high-confinement regime with a duration of 1056 s has been achieved on the EAST tokamak.',
-      evidenceTags: ['长脉冲', '高约束模', '稳态放电']
-    },
-    {
-      id: 'researchMethod',
-      name: '系统机理',
-      kind: 'content',
-      tone: 'pink',
-      title: '多套射频波协同驱动与排热',
-      summary: '依靠低杂波 (LHW) 与电子回旋波 (ECRH) 进行纯射频波电流驱动，成功控制偏滤器靶板热负荷低于工程限值。',
-      keyFinding: '纯射频波驱动 · 靶板峰值热流 < 3 MW/m²',
-      pageAnchor: 3,
-      quote: 'The plasma current was driven purely by radio-frequency waves without central solenoid induction during the flat-top.',
-      evidenceTags: ['低杂波', '电子回旋波', '热负荷控制']
-    },
-    {
-      id: 'limitations',
-      name: '研究局限与边界',
-      kind: 'evidence',
-      tone: 'orange',
-      title: '持续运行不等于净发电',
-      summary: '科学核验警示：千秒级等离子体稳态控制是物理突破，但离真正的商业聚变电站仍需克服材料辐照损伤、氚自持循环与 Q > 1 增益等堆级挑战。',
-      keyFinding: '纯氘长脉冲 · 尚未进行氘氚核反应',
-      pageAnchor: 6,
-      quote: 'This regime demonstrates continuous plasma control rather than net electrical power generation.',
-      evidenceTags: ['非发电堆', '纯氘实验', '科学边界']
+  // 卡片数据来自后端保存的 ResearchSite；没有连入真实论文时不展示演示卡片。
+  const researchSite = ref<ResearchSite | null>(null)
+  const siteLoading = ref(false)
+  const siteError = ref('')
+  let siteRequestId = 0
+  let paperRequestId = 0
+
+  const academicCards = computed<AcademicCard[]>(() => {
+    const cards = researchSite.value?.modes[currentMode.value]?.cards ?? []
+    return cards.map(toAcademicCard)
+  })
+
+  function toAcademicCard(card: SiteCard): AcademicCard {
+    const firstEvidence = card.evidence[0]
+
+    return {
+      id: card.id,
+      name: card.eyebrow || card.type,
+      kind: card.type,
+      tone: toneForCard(card.type),
+      title: card.title,
+      summary: card.summary,
+      pageAnchor: firstEvidence?.page,
+      quote: firstEvidence?.quote,
+      evidence: card.evidence,
+      data: card.data
     }
-  ])
+  }
+
+  function toneForCard(type: string): AcademicCard['tone'] {
+    const tones: Record<string, AcademicCard['tone']> = {
+      researchConclusion: 'lime',
+      researcherBridge: 'lime',
+      method: 'pink',
+      results: 'violet',
+      limits: 'orange',
+      figure: 'cyan',
+      references: 'lilac',
+      risk: 'orange',
+      conditions: 'coral'
+    }
+
+    return tones[type] ?? 'lilac'
+  }
+
+  async function loadResearchSite(paperId: string) {
+    const requestId = ++siteRequestId
+    siteLoading.value = true
+    siteError.value = ''
+
+    try {
+      const site = await papersApi.getSite(paperId)
+      if (requestId !== siteRequestId) return
+
+      researchSite.value = site
+    } catch (error) {
+      if (requestId !== siteRequestId) return
+
+      researchSite.value = null
+      siteError.value = error instanceof Error ? error.message : '读取论文卡片失败'
+    } finally {
+      if (requestId === siteRequestId) {
+        siteLoading.value = false
+      }
+    }
+  }
+
+  function updateCurrentPaper(paper: PaperSummary) {
+    currentPaper.value = {
+      id: paper.id,
+      title: paper.title || paper.original_filename,
+      authors: paper.authors,
+      originalFilename: paper.original_filename,
+      status: paper.status,
+      pageCount: paper.page_count ?? 0,
+      errorMessage: paper.error_message
+    }
+  }
+
+  async function refreshLibrary() {
+    libraryLoading.value = true
+    libraryError.value = ''
+
+    try {
+      papers.value = await papersApi.list()
+    } catch (error) {
+      libraryError.value = error instanceof Error ? error.message : '读取论文列表失败'
+    } finally {
+      libraryLoading.value = false
+    }
+  }
+
+  async function selectPaper(paperId: string) {
+    const requestId = ++paperRequestId
+    siteRequestId += 1
+    researchSite.value = null
+    siteLoading.value = false
+    paperPages.value = []
+    siteError.value = ''
+    highlightAnchor.value = null
+    currentPage.value = 1
+
+    try {
+      const paper = await papersApi.get(paperId)
+      if (requestId !== paperRequestId) return
+
+      updateCurrentPaper(paper)
+      paperPages.value = paper.pages
+      currentPage.value = Math.min(Math.max(currentPage.value, 1), Math.max(paper.page_count ?? 1, 1))
+
+      if (paper.status === 'ready' && paper.site_version) {
+        await loadResearchSite(paper.id)
+      }
+    } catch (error) {
+      if (requestId !== paperRequestId) return
+      libraryError.value = error instanceof Error ? error.message : '读取论文失败'
+    }
+  }
+
+  async function uploadPaper(file: File) {
+    uploadLoading.value = true
+    libraryError.value = ''
+
+    try {
+      const accepted = await papersApi.upload(file)
+      await refreshLibrary()
+      await selectPaper(accepted.paper.id)
+      return accepted
+    } catch (error) {
+      libraryError.value = error instanceof Error ? error.message : '上传 PDF 失败'
+      throw error
+    } finally {
+      uploadLoading.value = false
+    }
+  }
+
+  async function initializeLibrary(preferredPaperId?: string) {
+    await refreshLibrary()
+    const preferred = preferredPaperId && papers.value.some((paper) => paper.id === preferredPaperId)
+      ? preferredPaperId
+      : papers.value[0]?.id
+
+    if (preferred) {
+      await selectPaper(preferred)
+    }
+  }
+
+  async function refreshCurrentPaper() {
+    if (!currentPaper.value.id) return
+    await selectPaper(currentPaper.value.id)
+    await refreshLibrary()
+  }
 
   // 会话流
   const chatTurns = ref<ChatTurn[]>([
@@ -178,7 +306,11 @@ export const useWorkbenchStore = defineStore('workbench', () => {
         id: String(Date.now() + 1),
         sender: 'assistant',
         timestamp: '刚刚',
-        content: `根据《Science Advances 2023》论文正文第 ${selectedQuote.value ? selectedQuote.value.page : 2} 节的实验数据分析：EAST 通过协同运用 4.6 GHz 低杂波系统与电子回旋加热，实现了零环电压超长脉冲运转。此项成果证实了托卡马克无需中央螺线管持续感应即可维持稳态电流，但仍须注意该实验是在纯氘条件下完成的，不代表已实现聚变净能量增益。`,
+        content: [
+          `根据论文正文第 ${selectedQuote.value?.page ?? 2} 页的实验数据分析：`,
+          'EAST 通过协同运用低杂波系统与电子回旋加热，实现了零环电压超长脉冲运转。',
+          '该结果展示了托卡马克稳态电流控制能力；实验使用纯氘，不代表实现聚变净能量增益。'
+        ].join(''),
         evidenceQuotes: selectedQuote.value ? [selectedQuote.value] : [
           { page: 2, text: 'Plasma current was maintained with zero loop voltage under steady-state conditions.' }
         ]
@@ -204,6 +336,14 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     selectedQuote,
     scoreItems,
     academicCards,
+    papers,
+    paperPages,
+    libraryLoading,
+    uploadLoading,
+    libraryError,
+    researchSite,
+    siteLoading,
+    siteError,
     chatTurns,
     activeNote,
     // Actions
@@ -215,6 +355,12 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     toggleDock,
     jumpToSource,
     setQuoteForAsk,
-    sendQuestion
+    sendQuestion,
+    loadResearchSite,
+    refreshLibrary,
+    selectPaper,
+    uploadPaper,
+    initializeLibrary,
+    refreshCurrentPaper
   }
 })

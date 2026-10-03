@@ -9,70 +9,49 @@
       @translate="handleTranslateSelection"
     />
 
-    <!-- 文本解析模式 -->
-    <div v-if="workbenchStore.viewMode === 'text'" class="source-text-document">
+    <!-- 后端解析文本模式 -->
+    <div v-if="workbenchStore.viewMode === 'text' && currentPageText" class="source-text-document">
       <header class="doc-header">
-        <span class="doc-journal">Science Advances · 2023 · Article</span>
+        <span class="doc-journal">原文文本 · 第 {{ workbenchStore.currentPage }} 页</span>
         <h2 class="doc-title">{{ workbenchStore.currentPaper.title }}</h2>
-        <p class="doc-authors">H. Q. Liu, X. Z. Gong, J. P. Qian, B. Shen, G. S. Xu, et al.</p>
-        <p class="doc-doi">DOI: {{ workbenchStore.currentPaper.doi }}</p>
+        <p v-if="workbenchStore.currentPaper.authors.length" class="doc-authors">
+          {{ workbenchStore.currentPaper.authors.join(', ') }}
+        </p>
+        <p class="doc-doi">{{ workbenchStore.currentPaper.originalFilename }}</p>
       </header>
 
-      <section class="doc-section abstract-section">
-        <h3>ABSTRACT</h3>
-        <p>
-          Long-pulse steady-state high-confinement operation is an essential requirement for future magnetic confinement fusion reactors such as ITER and CFETR. Here, we report on the realization of a steady-state long-pulse high-confinement plasma regime on the Experimental Advanced Superconducting Tokamak (EAST) with a duration of 1056 s.
-        </p>
-      </section>
-
-      <section class="doc-section">
-        <h3>1. INTRODUCTION</h3>
-        <p>
-          Magnetic confinement fusion research has made significant progress in exploring high-confinement modes. The Experimental Advanced Superconducting Tokamak (EAST) was constructed to address key physics and engineering issues for long-pulse high-power steady-state plasma operations.
-        </p>
-      </section>
-
-      <section class="doc-section">
-        <h3>2. EXPERIMENTAL SETUP &amp; RESULTS</h3>
-        <p>
-          In discharge #106915, plasma current was sustained with pure radio-frequency (RF) wave heating and current drive, utilizing the 4.6 GHz lower hybrid current drive (LHCD) and electron cyclotron resonance heating (ECRH) systems. The line-averaged electron density was maintained steadily around 3.0 × 10¹⁹ m⁻³.
-        </p>
-        <p class="highlight-target" :class="{ active: workbenchStore.highlightAnchor }">
-          <mark v-if="workbenchStore.highlightAnchor">
-            {{ workbenchStore.highlightAnchor }}
-          </mark>
-          <span v-else>
-            A steady-state long-pulse high-confinement regime with a duration of 1056 s has been achieved on the EAST tokamak, setting a world record for magnetic confinement plasma duration.
-          </span>
-        </p>
-      </section>
-
-      <section class="doc-section">
-        <h3>3. DISCUSSION &amp; LIMITATIONS</h3>
-        <p>
-          Although continuous plasma sustainment was demonstrated for 1056 s, this achievement represents an operational physics baseline. Substantial challenges remain in addressing high-fluence neutron wall loads, tritium fuel self-sufficiency, and demonstration of net fusion electricity gain (Q > 1) in commercial reactor prototypes.
-        </p>
+      <section class="doc-section source-page-text">
+        <h3>第 {{ workbenchStore.currentPage }} 页</h3>
+        <p v-html="highlightedPageHtml"></p>
       </section>
     </div>
 
-    <!-- PDF 嵌入模式 -->
-    <div v-else class="source-pdf-document">
-      <div class="pdf-page-sheet carved-card">
-        <div class="pdf-page-badge">第 {{ workbenchStore.currentPage }} 页预览</div>
-        <img
-          class="pdf-page-img"
-          :src="`https://paper-to-any.8-218-121-139.sslip.io/ui/papers/east-super-i-mode/assets/pages/page-${String(workbenchStore.currentPage).padStart(2, '0')}.png`"
-          alt="PDF 原文页面"
-          loading="lazy"
-        />
-      </div>
+    <!-- PDF 原件由后端按当前论文流式返回 -->
+    <div v-else-if="workbenchStore.currentPaper.id && workbenchStore.currentPaper.status === 'ready'" class="source-pdf-document">
+      <iframe
+        class="source-pdf-frame"
+        :src="papersApi.sourceUrl(workbenchStore.currentPaper.id, workbenchStore.currentPage)"
+        :title="`${workbenchStore.currentPaper.title} PDF 原文`"
+      ></iframe>
+    </div>
+    <div v-else class="source-empty-state">
+      <p v-if="workbenchStore.currentPaper.status === 'failed'">
+        {{ workbenchStore.currentPaper.errorMessage || 'PDF 解析失败。' }}
+      </p>
+      <p v-else-if="workbenchStore.currentPaper.id">
+        PDF 正在解析，完成后会显示原文和阅读卡片。
+      </p>
+      <p v-else>
+        选择论文或导入 PDF 后，这里会显示真实原文。
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useWorkbenchStore } from '@/stores/workbench'
+import { papersApi } from '@/api/papers'
 import SelectionActionBubble from './SelectionActionBubble.vue'
 
 const workbenchStore = useWorkbenchStore()
@@ -80,6 +59,35 @@ const workbenchStore = useWorkbenchStore()
 const bubbleVisible = ref(false)
 const bubblePos = ref({ x: 0, y: 0 })
 const currentSelection = ref('')
+
+const currentPageText = computed(() => {
+  return workbenchStore.paperPages.find((page) => page.page === workbenchStore.currentPage)?.text ?? ''
+})
+
+const highlightedPageHtml = computed(() => {
+  const escapedText = escapeHtml(currentPageText.value)
+  const quote = workbenchStore.highlightAnchor
+  if (!quote) return escapedText
+
+  const escapedQuote = escapeHtml(quote)
+  const start = escapedText.toLocaleLowerCase().indexOf(escapedQuote.toLocaleLowerCase())
+  if (start < 0) return escapedText
+
+  const beforeQuote = escapedText.slice(0, start)
+  const matchedQuote = escapedText.slice(start, start + escapedQuote.length)
+  const afterQuote = escapedText.slice(start + escapedQuote.length)
+
+  return `${beforeQuote}<mark>${matchedQuote}</mark>${afterQuote}`
+})
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
 
 function handleTextSelection(e: MouseEvent) {
   const selection = window.getSelection()
@@ -110,7 +118,7 @@ function handleCiteSelection() {
 }
 
 function handleTranslateSelection() {
-  alert(`划词翻译：\n"${currentSelection.value}"\n\n【中文释义】：\n在 EAST 托卡马克上实现了 1056 秒超长脉冲高约束等离子体运行...`)
+  alert('划词翻译尚未连接翻译服务。')
   bubbleVisible.value = false
 }
 </script>
@@ -183,6 +191,11 @@ function handleTranslateSelection() {
   color: #29253a;
 }
 
+.source-page-text p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .abstract-section {
   background: #f7f5fa;
   padding: 16px;
@@ -190,7 +203,7 @@ function handleTranslateSelection() {
   font-size: 13px;
 }
 
-.highlight-target mark {
+.source-page-text mark {
   background: #fff4ba;
   padding: 2px 4px;
   border-radius: 4px;
@@ -200,28 +213,29 @@ function handleTranslateSelection() {
 /* PDF 模式 */
 .source-pdf-document {
   display: flex;
-  justify-content: center;
+  flex: 1;
+  min-height: 70vh;
 }
 
-.pdf-page-sheet {
-  background: #ffffff;
-  padding: 12px;
-  border-radius: 12px;
+.source-pdf-frame {
   width: 100%;
-}
-
-.pdf-page-badge {
-  font-size: 11px;
-  color: #716880;
-  margin-bottom: 8px;
-  font-family: var(--font-mono);
-}
-
-.pdf-page-img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
+  min-height: 70vh;
   border: 1px solid #e1dee7;
-  display: block;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.source-empty-state {
+  display: grid;
+  min-height: 240px;
+  place-items: center;
+  color: #81798d;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.source-empty-state p {
+  max-width: 360px;
+  margin: 0;
 }
 </style>

@@ -15,9 +15,36 @@
             <p>{{ card.summary }}</p>
           </div>
 
-          <div v-if="card.quote" class="quote-section">
-            <span class="quote-tag">原文关键语句依据 (Page {{ card.pageAnchor }})：</span>
-            <blockquote>“{{ card.quote }}”</blockquote>
+          <div v-if="dataItems.length" class="card-data-list">
+            <div v-for="(item, index) in dataItems" :key="`${item.label}-${index}`" class="card-data-item">
+              <button
+                v-if="item.page"
+                type="button"
+                class="evidence-page-link"
+                @click="workbenchStore.jumpToSource(item.page, item.detail)"
+              >
+                {{ item.label }} · 第 {{ item.page }} 页 ↗
+              </button>
+              <strong v-else>{{ item.label }}</strong>
+              <span v-if="item.value !== undefined" class="card-data-value">
+                {{ item.value }}{{ item.unit ? ` ${item.unit}` : '' }}
+              </span>
+              <p v-if="item.detail">{{ item.detail }}</p>
+            </div>
+          </div>
+
+          <div v-if="card.evidence.length" class="quote-section">
+            <span class="quote-tag">原文证据：</span>
+            <figure v-for="(item, index) in card.evidence" :key="`${item.page}-${index}`">
+              <button
+                type="button"
+                class="evidence-page-link"
+                @click="workbenchStore.jumpToSource(item.page, item.quote)"
+              >
+                第 {{ item.page }} 页 ↗
+              </button>
+              <blockquote>“{{ item.quote }}”</blockquote>
+            </figure>
           </div>
 
           <div class="evidence-tags-row">
@@ -48,6 +75,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useWorkbenchStore } from '@/stores/workbench'
 import type { AcademicCard } from '@/types/workbench'
 
@@ -61,6 +89,21 @@ const emit = defineEmits<{
 }>()
 
 const workbenchStore = useWorkbenchStore()
+
+const dataItems = computed(() => {
+  const items = props.card?.data.items
+  if (!Array.isArray(items)) return []
+
+  return items.filter((item): item is {
+    label: string
+    detail?: string
+    page?: number
+    value?: string | number
+    unit?: string
+  } => {
+    return typeof item === 'object' && item !== null && 'label' in item && typeof item.label === 'string'
+  })
+})
 
 function handleAsk() {
   if (props.card?.pageAnchor && props.card?.quote) {
@@ -152,6 +195,34 @@ function handleJump() {
   margin: 0;
 }
 
+.card-data-list {
+  display: grid;
+  gap: 10px;
+}
+
+.card-data-item {
+  padding: 12px 14px;
+  border: 1px solid #eee9f4;
+  border-radius: 10px;
+  color: #51495e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.card-data-item strong {
+  color: #35206d;
+}
+
+.card-data-item p {
+  margin: 4px 0 0;
+}
+
+.card-data-value {
+  margin-left: 8px;
+  color: #18141f;
+  font-weight: 700;
+}
+
 .quote-section {
   padding: 16px 20px;
   border-radius: 12px;
@@ -174,6 +245,25 @@ function handleJump() {
   font-size: 14px;
   line-height: 1.7;
   color: #3b3248;
+}
+
+.quote-section figure {
+  margin: 0 0 14px;
+}
+
+.quote-section figure:last-child {
+  margin-bottom: 0;
+}
+
+.evidence-page-link {
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #513995;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .evidence-tags-row {

@@ -17,7 +17,6 @@
 
           <!-- 视图 1: 学术成果卡片流 -->
           <div v-show="workbenchStore.activeTab === 'reading'" class="stage-reading-view">
-            <ScoreMatrixBar />
             <AcademicCardGrid @open-detail="openCardDetail" />
           </div>
 
@@ -51,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWorkbenchStore } from '@/stores/workbench'
 import type { AcademicCard, ReadingMode } from '@/types/workbench'
@@ -60,7 +59,6 @@ import WorkspaceSidebar from './components/rail/WorkspaceSidebar.vue'
 import StageNavTabs from './components/stage/StageNavTabs.vue'
 import ChatStream from './components/stage/chat/ChatStream.vue'
 import ChatComposer from './components/stage/chat/ChatComposer.vue'
-import ScoreMatrixBar from './components/stage/reading/ScoreMatrixBar.vue'
 import AcademicCardGrid from './components/stage/reading/AcademicCardGrid.vue'
 import CardDetailModal from './components/stage/reading/CardDetailModal.vue'
 import NoteEditor from './components/stage/notes/NoteEditor.vue'
@@ -72,16 +70,23 @@ const workbenchStore = useWorkbenchStore()
 
 const isDetailVisible = ref(false)
 const selectedCardForDetail = ref<AcademicCard | null>(null)
+let paperStatusPoll: number | undefined
 
 function openCardDetail(card: AcademicCard) {
   selectedCardForDetail.value = card
   isDetailVisible.value = true
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.mode) {
     workbenchStore.setMode(route.query.mode as ReadingMode)
   }
+
+  const requestedPaperId = typeof route.query.paperId === 'string'
+    ? route.query.paperId
+    : undefined
+  await workbenchStore.initializeLibrary(requestedPaperId)
+
   if (route.query.question) {
     const q = decodeURIComponent(route.query.question as string)
     workbenchStore.setStageTab('chat')
@@ -89,6 +94,29 @@ onMounted(() => {
   }
   if (route.query.card) {
     workbenchStore.setStageTab('reading')
+  }
+})
+
+watch(
+  () => [workbenchStore.currentPaper.id, workbenchStore.currentPaper.status] as const,
+  ([paperId, status]) => {
+    if (paperStatusPoll !== undefined) {
+      window.clearInterval(paperStatusPoll)
+      paperStatusPoll = undefined
+    }
+
+    const isProcessing = ['uploaded', 'extracting', 'extracted', 'compiling'].includes(status)
+    if (!paperId || !isProcessing) return
+
+    paperStatusPoll = window.setInterval(() => {
+      void workbenchStore.refreshCurrentPaper()
+    }, 2500)
+  }
+)
+
+onUnmounted(() => {
+  if (paperStatusPoll !== undefined) {
+    window.clearInterval(paperStatusPoll)
   }
 })
 </script>

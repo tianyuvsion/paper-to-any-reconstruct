@@ -19,7 +19,7 @@
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>新建研究</span>
+        <span>导入 PDF</span>
       </button>
     </div>
 
@@ -28,7 +28,7 @@
 
     <!-- 4. 5 项核心菜单 (对齐设计稿选项与高亮排版) -->
     <nav class="nav-list" aria-label="工作空间导航">
-      <!-- 1: 研究库 (设计稿中当前选中状态) -->
+      <!-- 我的论文菜单 -->
       <a
         href="#library"
         class="nav-item"
@@ -39,7 +39,7 @@
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
         </svg>
-        <span>研究库</span>
+        <span>我的论文</span>
       </a>
 
       <!-- 2: 研究会话 -->
@@ -100,6 +100,10 @@
       </a>
     </nav>
 
+    <div v-if="workbenchStore.activeSidebarNav === 'library'" class="sidebar-paper-panel">
+      <RailPaperList ref="paperListRef" />
+    </div>
+
     <!-- 5. 底部固定功能区 (设置与收起导航) -->
     <div class="sidebar-bottom">
       <a
@@ -133,12 +137,16 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref } from 'vue'
 import { useWorkbenchStore } from '@/stores/workbench'
+import RailPaperList from './RailPaperList.vue'
 
 const workbenchStore = useWorkbenchStore()
+const paperListRef = ref<InstanceType<typeof RailPaperList> | null>(null)
 
 function handleNewResearch() {
-  workbenchStore.setSidebarNav('import')
+  workbenchStore.setSidebarNav('library')
+  nextTick(() => paperListRef.value?.openFilePicker())
 }
 </script>
 
@@ -188,6 +196,11 @@ function handleNewResearch() {
 .action-wrap {
   margin-bottom: 24px;
   padding: 0 4px;
+}
+
+.sidebar-paper-panel {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .btn-new-research {

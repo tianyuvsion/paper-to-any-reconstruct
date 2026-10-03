@@ -8,11 +8,10 @@ export interface PaperMeta {
   id: string
   title: string
   authors: string[]
-  journal: string
-  year: number | string
-  doi: string
-  status: 'ready' | 'processing' | 'uploaded'
+  originalFilename: string
+  status: 'uploaded' | 'extracting' | 'extracted' | 'compiling' | 'ready' | 'failed'
   pageCount: number
+  errorMessage?: string | null
 }
 
 export interface ScoreItem {
@@ -36,6 +35,12 @@ export interface AcademicCard {
   pageAnchor?: number
   quote?: string
   evidenceTags?: string[]
+  evidence: {
+    page: number
+    quote: string
+    source: 'pdf_text'
+  }[]
+  data: Record<string, unknown>
 }
 
 export interface ContextRef {
